@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 using namespace std;
+
 class Data
 {
 public:
@@ -38,6 +39,7 @@ public:
     void print();
     void Optimal();
     void Create();
+    void Sum();
 };
 
 
