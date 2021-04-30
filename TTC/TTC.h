@@ -1,7 +1,9 @@
 #pragma once
 #include <iostream>
 #include <cstdlib>
+#include <algorithm>
 using namespace std;
+
 class Data
 {
 public:

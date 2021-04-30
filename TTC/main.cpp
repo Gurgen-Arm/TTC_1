@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include "TTC.h"
 #include <cstdlib>
+#include <algorithm>
 using namespace std;
 
 
