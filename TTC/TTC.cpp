@@ -2,10 +2,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <algorithm>
-int comp(const void*, const void*);
+
 Data::Data()
 {
-    cout << "Введите размер строк и столбцов" << endl;
+    cout << "Iput rows and cols" << endl;
     cin >> this->rows;
     cin >> this->cols;
     Create();
@@ -23,18 +23,18 @@ void Data::Create()
 }
 void Data::inicialization()
 {
-    cout << "Введите количество товаров" << endl;
+    cout << "Input quantity of products" << endl;
     for (int i = 0; i < rows; i++)
     {
         cin >> this->a[i];
     }
-    cout << "Введите потребность в товарах" << endl;
+    cout << "Input quantity of consumers" << endl;
 
     for (int i = 0; i < cols; i++)
     {
         cin >> this->b[i];
     }
-    cout << "Введите таблицу стоимости" << endl;
+    cout << "Input cost matrix" << endl;
 
     for (int i = 0; i < rows; i++)
     {
@@ -46,19 +46,19 @@ void Data::inicialization()
 }
 void  Data::print()
 {
-    cout << "Количество товаров пунктах доставки " << endl;
+    cout << "a: " << endl;
     for (int i = 0; i < this->rows; i++)
     {
         cout << this->a[i] << ",";
     }
     cout << endl;
-    cout << "Количество товаров нужных на складах " << endl;
+    cout << "b: " << endl;
     for (int i = 0; i < this->cols; i++)
     {
         cout << this->b[i] << ",";
     }
     cout << endl;
-    cout << "Матрица стоимости" << endl;
+    cout << "c:" << endl;
     for (int i = 0; i < this->rows; i++)
     {
         for (int j = 0; j < this->cols; j++)
@@ -97,13 +97,34 @@ NWcorner::~NWcorner()
         delete[] this->W[i];
     }
     delete[] this->W;
-  //  delete[] this->u;
-    //delete[] this->v;
+    delete[] this->u;
+    delete[] this->v;
 }
+void NWcorner::Create()
+{
+    X = new int* [rows];
+    for (int i = 0; i < rows; i++)
+    {
+        X[i] = new int[cols];
+    }
+    W = new int* [rows];
+    for (int i = 0; i < rows; i++)
+    {
+        W[i] = new int[cols];
+    }
 
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            this->X[i][j] = 0;
+        }
+    }
+
+}
 void NWcorner::Calculate()
 {
-    for (int i = 0,j=0; (i < rows) && (j < cols); )
+    for (int i = 0, j = 0; (i < rows) && (j < cols); )
     {
 
         if (b[j] - a[i] < 0)
@@ -120,9 +141,9 @@ void NWcorner::Calculate()
         }
         if (b[j] - a[i] == 0)
         {
-            
-            //X[0][j + 1] = -1;
-
+            if(i!=rows-1&&j!=cols-1)
+                X[i+1][j] = -1;
+            //cout << "Я вызвался"<<i<<" "<<j << endl;
             X[i][j] = a[i];
             i++;
             j++;
@@ -131,176 +152,49 @@ void NWcorner::Calculate()
     this->print();
     Potential();
 }
-void NWcorner::Correct(int i,int j)
-{
-    
-    int t;
-    for (int r = 1; r < rows; r++)
-    {
-        for (int q = 1; q < cols; q++)
-        {
-            if ((i + r < rows) && (j + q < cols))
-            {
-                if((X[i][j+q]!=0)&&(X[i+r][j+q]!=0)&&(X[i+r][j]!=0))
-                {
-                    if (X[i][j + q] == -1)
-                        X[i][j + q] = 0;
-                    if (X[i+r][j + q] == -1)
-                        X[i+r][j + q] = 0;
-                    if (X[i+r][j] == -1)
-                        X[i+r][j] = 0;
-                    t=min(min(X[i][j + q], X[i + r][j + q]),min(X[i + r][j],X[i+r][j]));
-                    
-                    X[i][j] +=t ;
-                    X[i+r][j] -= t;
-                    X[i][j+q] -= t;
-                    X[i+r][j+q] += t;
-                    this->print();
-                    Potential();
-                }
-                
-            }
-            if ((i + r < rows) && (j - q >0 ))
-            {
-                if ((X[i][j - q] != 0) && (X[i + r][j - q] != 0) && (X[i + r][j] != 0))
-                {
-                    if (X[i][j - q] == -1)
-                        X[i][j - q] = 0;
-                    if (X[i + r][j - q] == -1)
-                        X[i + r][j - q] = 0;
-                    if (X[i + r][j] == -1)
-                        X[i + r][j] = 0;
-                    t = min(min(X[i][j - q], X[i + r][j - q]), min(X[i + r][j], X[i+r][j]));
-                    
-                    X[i][j] += t;
-                    X[i + r][j] -= t;
-                    X[i][j - q] -= t;
-                    X[i + r][j - q] += t;
-                    this->print();
- 
-                    Potential();
-                }
-            }
-            if ((i - r>0) && (j + q < cols))
-            {
-                if ((X[i][j + q] != 0) && (X[i - r][j + q] != 0) && (X[i - r][j] != 0))
-                {
-                    if (X[i][j + q] == -1)
-                        X[i][j + q] = 0;
-                    if (X[i - r][j + q] == -1)
-                        X[i - r][j + q] = 0;
-                    if (X[i - r][j] == -1)
-                        X[i - r][j] = 0;
-                    t = min(min(X[i][j + q], X[i - r][j + q]), min(X[i - r][j], X[i+r][j]));
-                    
-                    X[i][j] += t;
-                    X[i - r][j] -= t;
-                    X[i][j + q] -= t;
-                    X[i - r][j + q] += t;
-                    this->print();
-                    Potential();
-                }
-            }
-            if ((i - r>0 ) && (j - q > 0))
-            {
-                if ((X[i][j - q] != 0) && (X[i - r][j - q] != 0) && (X[i - r][j] != 0))
-                {
-                    if (X[i][j - q] == -1)
-                        X[i][j - q] = 0;
-                    if (X[i - r][j - q] == -1)
-                        X[i - r][j - q] = 0;
-                    if (X[i - r][j] == -1)
-                        X[i - r][j] = 0;
-                    t = min(min(X[i][j - q], X[i - r][j - q]), min(X[i - r][j], X[i+r][j]));
-                    
-                    X[i][j] += t;
-                    X[i - r][j] -= t;
-                    X[i][j - q] -= t;
-                    X[i - r][j - q] += t;
-                    this->print();
-                    Potential();
-                }
-            }
-        }
-        
-        
-    }
-}
 void NWcorner::Potential()
 {
     u = new int[rows];
     v = new int[cols];
-    u[0] = 0;
-    for (int i = 0, j = 0; i < rows;i++)
-    {
-        j = 0;
-        
-        if (X[i][j] < 0)
-        {
-            v[j] = c[i][j] - u[i];
-            
-            j++;
-        }
-        while (X[i][j] == 0)
-            j++;
-        if (i != 0)
-        {
-            
-            u[i] = c[i][j] - v[j];
-
-        }
-            
-        for (; j < cols;)
-        {
-            if (X[i][j] < 0)
-            {
-                v[j] = c[i][j] - u[i];
-                
-                j++;
-            }
-            while (X[i][j] == 0)
-                j++;
-            v[j] = c[i][j] - u[i];
-            j++;
-        }
-    }
     for (int i = 0; i < rows; i++)
-        cout << "u" << i<<"=" << u[i] << endl;
-    cout << endl;
-    for (int i = 0; i < cols; i++)
-        cout << "v" << i <<"="<< v[i] << endl;
-    Optimal();
-}
-void NWcorner::Create()
-{
-    X = new int* [rows];
+        u[i] = 0;
+    for (int j = 0; j < cols; j++)
+        v[j] = 0;
+    //filling potentials
     for (int i = 0; i < rows; i++)
-    {
-        X[i] = new int[cols];
-    }
-    W = new int* [rows];
-    for (int i = 0; i < rows; i++)
-    {
-        W[i] = new int[cols];
-    }
-    //u = new int[rows];
-   // v = new int[cols];
-    
-    for (int i = 0; i < rows; i++)
-    {
         for (int j = 0; j < cols; j++)
         {
-             this->X[i][j]=0;
+
+            if ((i >= 1) && (j == 0))
+                for (int cj = 0; cj < cols; cj++)
+                {
+                    if ((X[i][cj] != 0) && (v[cj] != 0) && (c[i][j] != u[i] + v[j]))
+                    {
+                        u[i] = c[i][cj] - v[cj];
+                        break;
+                    }
+                }
+            if (X[i][j] == -1)
+                v[j] = c[i][j] - u[i];
+            if (X[i][j] == 0)
+                continue;
+            if ((v[j] == 0) && (c[i][j] != u[i] + v[j]))
+                v[j] = c[i][j] - u[i];
+          
         }
-    }
-    
+    for (int i = 0; i < rows; i++)
+        cout << "u" << i << ":" << u[i] << endl;
+    for (int j = 0; j < cols; j++)
+        cout << "v" << j << ":" << v[j] << endl;
+    Optimal();
+   
 }
 void NWcorner::Optimal()
 {
     for (int i = 0; i < rows; i++)
         for (int j = 0; j < cols; j++)
             W[i][j] = u[i] + v[j];
-    cout << "Матрица Оптимальности:" << endl;
+    cout << "Matrix of optimal:" << endl;
     for (int i = 0; i < this->rows; i++)
     {
         for (int j = 0; j < this->cols; j++)
@@ -309,11 +203,11 @@ void NWcorner::Optimal()
         }
         cout << endl;
     }
-    int s=0;
+    int s = 0;
     int* op;
     for (int i = 0; i < rows; i++)
         for (int j = 0; j < cols; j++)
-            if (W[i][j] > c[i][j]) 
+            if (W[i][j] > c[i][j])
                 s++;
     if (s > 0)
     {
@@ -327,44 +221,181 @@ void NWcorner::Optimal()
                     op[f] = W[i][j] - c[i][j];
                     f++;
                 }
-
-        qsort(op, s, sizeof(int), comp);
+        int maxEl = op[0];
+        for (int g = 0; g < s; g++)
+            if (op[g] > maxEl)
+                maxEl = op[g];
         
+        int Ai = 0;
+        int Aj = 0;
         for (int i = 0; i < rows; i++)
             for (int j = 0; j < cols; j++)
                 if (W[i][j] > c[i][j])
                 {
-                    if (W[i][j] - c[i][j] == op[s - 1])
+                    if ((W[i][j] - c[i][j]) == maxEl)
                     {
-                        delete[] op;
-                        delete[] this->u;
-                        delete[] this->v;
-                        Correct(i, j);
-                        
-                        
+                        Ai = i;
+                        Aj = j;
                     }
                 }
+
+        delete[] op;
+        delete[] this->u;
+        delete[] this->v;
+        Correct(Ai, Aj);
     }
-    
+
     if (s == 0)
-        cout << "Система Оптимальна";
-    
-    // создать булеву функцию ,которая будет следить за оптимальностью ,а это в свою очередь запускает процесс остальных функций 
+    {
+
+        cout << "Matrix is optimal";
+        Sum();
+    }
+
+
+
 }
+void NWcorner::Correct(int i, int j)
+{
+    int t;
+    bool key = false;
+    for (int r = 1; r < rows; r++)
+    {
+        if (key) break;
+        for (int q = 1; q < cols; q++)
+        {
+            if ((i + r < rows) && (j + q < cols) && !key)
+            {
+                if ((X[i][j + q] != 0) && (X[i + r][j + q] != 0) && (X[i + r][j] != 0))
+                {
+                    if (X[i][j + q] < 0)
+                        X[i][j + q] = 0;
+                    else if (X[i + r][j + q] < 0)
+                        X[i + r][j + q] = 0;
+                    else if (X[i + r][j] < 0)
+                        X[i + r][j] = 0;
+                    t = min(X[i][j+q],X[i+r][j]);
+                    
+                    X[i][j] += t;
+                    X[i + r][j + q] += t;
+                    X[i + r][j] -= t;
+                    X[i][j + q] -= t;
+                    if (X[i][j + q] == X[i + r][j])
+                        X[i][j + q] = -1;
+                    
+                    this->print();
+                    key = true;
+                    break;
+                }
+
+            }
+            if ((i + r < rows) && (j - q >= 0) && !key)
+            {
+                if ((X[i][j - q] != 0) && (X[i + r][j - q] != 0) && (X[i + r][j] != 0))
+                {
+                    if (X[i][j - q] < 0)
+                        X[i][j - q] = 0;
+                    else if (X[i + r][j -q] < 0)
+                        X[i + r][j - q] = 0;
+                    else if (X[i + r][j] < 0)
+                        X[i + r][j] = 0;
+                    t = min(X[i][j - q], X[i + r][j]);
+
+                    X[i][j] += t;
+                    X[i + r][j - q] += t;
+                    X[i + r][j] -= t;
+                    X[i][j - q] -= t;
+                    if (X[i][j - q] == X[i + r][j])
+                        X[i][j - q] = -1;
+                    this->print();
+                    key = true;
+                    break;
+                }
+
+
+            }
+            if ((i - r >= 0) && (j + q < cols))
+            {
+                if ((X[i][j + q] != 0) && (X[i - r][j + q] != 0) && (X[i - r][j] != 0))
+                {
+                    if (X[i][j + q] < 0)
+                        X[i][j + q] = 0;
+                    else if (X[i - r][j + q] < 0)
+                        X[i - r][j + q] = 0;
+                    else if (X[i - r][j] < 0)
+                        X[i - r][j] = 0;
+                    t = min(X[i][j + q], X[i - r][j]);
+
+                    X[i][j] += t;
+                    X[i - r][j + q] += t;
+                    X[i - r][j] -= t;
+                    X[i][j + q] -= t;
+                    if (X[i-r][j] == X[i][j+q])
+                        X[i-r][j] = -1;
+                    this->print();
+                    key = true;
+                    break;
+                }
+
+            }
+            if ((i - r >= 0) && (j - q > 0) && !key)
+            {
+                if ((X[i][j - q] != 0) && (X[i - r][j - q] != 0) && (X[i - r][j] != 0))
+                {
+                    if (X[i][j - q] < 0)
+                        X[i][j - q] = 0;
+                    else if (X[i - r][j - q] < 0)
+                        X[i - r][j - q] = 0;
+                    else if (X[i - r][j] < 0)
+                        X[i - r][j] = 0;
+                    t = min(X[i][j - q],  X[i - r][j]);
+
+                    X[i][j] += t;
+                    X[i - r][j - q] += t;
+                    X[i - r][j] -= t;
+                    X[i][j - q] -= t;
+                    if (X[i-r][j] == X[i][j-q])
+                        X[i-r][j] = -1;
+                    this->print();
+                    key = true;
+                    break;
+                }
+
+            }
+        }
+    }
+    Potential();
+}
+
+
+void NWcorner::Sum()
+{
+    int sum = 0;
+    for (int i = 0; i < rows; i++)
+        for (int j = 0; j < cols; j++)
+        {
+            if (X[i][j] >= 0)
+                sum += X[i][j] * c[i][j];
+            else
+                sum += 0;
+        }
+    cout << "cost of transport = " << sum;
+}
+
 
 void NWcorner::print()
 {
-    cout << "Матрица Северо-Западного угла" << endl;
+    cout << "NW corner matrix" << endl;
     for (int i = 0; i < this->rows; i++)
     {
         for (int j = 0; j < this->cols; j++)
         {
-            cout << this->X[i][j] << "  ";
+            if(X[i][j]>=0)
+                cout << this->X[i][j] << "  ";
+            else
+                cout << "0" << "  ";
         }
         cout << endl;
     }
 }
-int comp(const void* i, const void* j)
-{
-    return *(int*)i - *(int*)j;
-}
+

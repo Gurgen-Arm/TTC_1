@@ -40,6 +40,7 @@ public:
     void print();
     void Optimal();
     void Create();
+    void Sum();
 };
 
 
